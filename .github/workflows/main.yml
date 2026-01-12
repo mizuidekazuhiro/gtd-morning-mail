@@ -1,0 +1,32 @@
+name: Send Inbox Triage Mail
+
+on:
+  workflow_dispatch:   # 手動実行（テスト用）
+  schedule:
+    - cron: "0 22 * * *"   # 毎朝 7:00 JST（UTC 22:00）
+
+jobs:
+  send-mail:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Send inbox mail
+        env:
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          INBOX_JSON_URL: ${{ secrets.INBOX_JSON_URL }}
+        run: |
+          python send_mail.py
