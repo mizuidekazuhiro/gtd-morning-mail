@@ -56,11 +56,11 @@ def build_html_mail(data):
             <span style="color:#888;font-size:12px;">{created}</span>
           </td>
           <td style="padding:8px;border-bottom:1px solid #ddd;">
-            {btn("Do", actions["do"], "#2563eb")}
-            {btn("Waiting", actions["waiting"], "#9333ea")}
-            {btn("Someday", actions["someday"], "#16a34a")}
-            {btn("Done", actions["done"], "#6b7280")}
-            {btn("Drop", actions["drop"], "#dc2626")}
+            {btn("Do", actions["Do"], "#2563eb")}
+            {btn("Waiting", actions["Waiting"], "#9333ea")}
+            {btn("Someday", actions["Someday"], "#16a34a")}
+            {btn("Done", actions["Done"], "#6b7280")}
+            {btn("Drop", actions["Drop"], "#dc2626")}
           </td>
         </tr>
         """
