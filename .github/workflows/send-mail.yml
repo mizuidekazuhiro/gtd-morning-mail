@@ -1,0 +1,29 @@
+name: Send Inbox Mail
+
+on:
+  workflow_dispatch:   # 手動実行
+  schedule:
+    - cron: "0 22 * * *"   # JST 朝7時（UTC 22時）
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Send mail
+        env:
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          INBOX_JSON_URL: ${{ secrets.INBOX_JSON_URL }}
+        run: python send_mail.py
