@@ -1,96 +1,63 @@
-import requests
-import smtplib
 import os
+import smtplib
+import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
 
 # =====================
-# 設定（ここだけ調整）
+# 環境変数
 # =====================
-INBOX_API_URL = "https://notion-inbox-triage.kazuhiro-mizuide.workers.dev/api/inbox"
+MAIL_FROM = os.environ["MAIL_FROM"]
+MAIL_TO = os.environ["MAIL_TO"]
+GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
+INBOX_JSON_URL = os.environ["INBOX_JSON_URL"]
 
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")      # 例: xxxx@gmail.com
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASS")  # 16桁のアプリPW
-MAIL_TO = os.environ.get("MAIL_TO", )
-
-# =====================
-# Inbox JSON 取得
-# =====================
-def fetch_inbox():
-    res = requests.get(INBOX_API_URL, timeout=10)
-    res.raise_for_status()
-    return res.json()
+MAIL_HOST = "smtp.gmail.com"
+MAIL_PORT = 587
 
 # =====================
-# HTMLメール生成
+# Inbox JSON取得
 # =====================
-def build_html(items):
-    rows = []
+response = requests.get(INBOX_JSON_URL, timeout=10)
+response.raise_for_status()
+data = response.json()
 
-    for item in items:
-        title = item["title"]
-        created = item["created"] or ""
-        actions = item["actions"]
-
-        buttons = " ".join(
-            f'<a href="{url}" style="margin-right:8px;">{label}</a>'
-            for label, url in actions.items()
-        )
-
-        rows.append(f"""
-        <tr>
-          <td style="padding:8px;border-bottom:1px solid #ddd;">
-            <b>{title}</b><br>
-            <small>{created}</small><br>
-            {buttons}
-          </td>
-        </tr>
-        """)
-
-    if not rows:
-        rows.append("<tr><td>🎉 Inbox は空です</td></tr>")
-
-    return f"""
-    <html>
-    <body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
-      <h2>📥 Inbox Triage</h2>
-      <table style="width:100%;border-collapse:collapse;">
-        {''.join(rows)}
-      </table>
-    </body>
-    </html>
-    """
+items = data.get("items", [])
 
 # =====================
-# メール送信
+# メール本文生成
 # =====================
-def send_mail(subject, html_body):
-    msg = MIMEMultipart("alternative")
-    msg["From"] = GMAIL_ADDRESS
-    msg["To"] = MAIL_TO
-    msg["Subject"] = subject
+lines = []
 
-    msg.attach(MIMEText(html_body, "html"))
+for i, item in enumerate(items, start=1):
+    lines.append(
+        f"{i}. {item['title']}\n"
+        f"   作成日: {item['created']}\n"
+        f"   Do      : {item['actions']['do']}\n"
+        f"   Waiting : {item['actions']['waiting']}\n"
+        f"   Someday : {item['actions']['someday']}\n"
+        f"   Done    : {item['actions']['done']}\n"
+        f"   Drop    : {item['actions']['drop']}\n"
+    )
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
-        server.send_message(msg)
+body = "\n".join(lines) if lines else "Inboxは空です。"
 
 # =====================
-# main
+# メール作成
 # =====================
-def main():
-    data = fetch_inbox()
+msg = MIMEMultipart()
+msg["From"] = MAIL_FROM
+msg["To"] = MAIL_TO
+msg["Subject"] = f"Inbox Triage ({len(items)} items)"
 
-    items = data["items"]
-    count = data["count"]
+msg.attach(MIMEText(body, "plain", "utf-8"))
 
-    subject = f"Inbox｜{count} 件｜{datetime.now().strftime('%Y-%m-%d')}"
-    html = build_html(items)
+# =====================
+# Gmail SMTP送信
+# =====================
+with smtplib.SMTP(MAIL_HOST, MAIL_PORT) as server:
+    server.starttls()
+    server.login(MAIL_FROM, GMAIL_APP_PASSWORD)
+    server.send_message(msg)
 
-    send_mail(subject, html)
-    print("✅ Mail sent successfully")
-
-if __name__ == "__main__":
-    main()
+print("✅ Mail sent successfully")
