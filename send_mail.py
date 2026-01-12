@@ -34,8 +34,7 @@ def build_html_mail(data):
     for item in items:
         title = item["title"]
         created = item["created"] or ""
-        actions = item["actions"]
-
+        actions = item.get("actions",{})
         def btn(label, url, color):
             return f"""
             <a href="{url}" style="
@@ -46,8 +45,15 @@ def build_html_mail(data):
               text-decoration:none;
               border-radius:4px;
               font-size:12px;
+              display:inline-block;
             ">{label}</a>
             """
+
+        def safe_btn(label, key, color):
+            url = actions.get(key)
+            if not url:
+                return ""
+            return btn(label, url, color)
 
         rows += f"""
         <tr>
@@ -55,13 +61,13 @@ def build_html_mail(data):
             <b>{title}</b><br>
             <span style="color:#888;font-size:12px;">{created}</span>
           </td>
-          <td style="padding:8px;border-bottom:1px solid #ddd;">
-            {btn("Do", actions["Do"], "#2563eb")}
-            {btn("Waiting", actions["Waiting"], "#9333ea")}
-            {btn("Someday", actions["Someday"], "#16a34a")}
-            {btn("Done", actions["Done"], "#6b7280")}
-            {btn("Drop", actions["Drop"], "#dc2626")}
-          </td>
+        <td style="padding:8px;border-bottom:1px solid #ddd;">
+          {safe_btn("Do", "Do", "#2563eb")}
+          {safe_btn("Waiting", "Waiting", "#9333ea")}
+          {safe_btn("Someday", "Someday", "#16a34a")}
+          {safe_btn("Done", "Done", "#6b7280")}
+          {safe_btn("Drop", "Drop", "#dc2626")}
+        </td>
         </tr>
         """
 
