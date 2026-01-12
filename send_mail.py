@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 # 環境変数
 # =====================
 MAIL_FROM = os.environ["MAIL_FROM"]
-MAIL_TO = os.environ["MAIL_TO"]
+MAIL_TO = os.environ["MAIL_TO"].split(",")
 GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
 INBOX_JSON_URL = os.environ["INBOX_JSON_URL"]
 
@@ -96,14 +96,14 @@ def build_html_mail(data):
 def send_mail(subject, html):
     msg = MIMEMultipart("alternative")
     msg["From"] = MAIL_FROM
-    msg["To"] = MAIL_TO
+    msg["To"] = ", ".join(MAIL_TO)   # 表示用
     msg["Subject"] = subject
 
     msg.attach(MIMEText(html, "html", "utf-8"))
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(MAIL_FROM, GMAIL_APP_PASSWORD)
-        server.send_message(msg)
+        server.send_message(msg, to_addrs=MAIL_TO)  # 実送信先
 
 
 # =====================
