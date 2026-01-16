@@ -23,7 +23,6 @@ def fetch_inbox():
     res.raise_for_status()
     return res.json()
 
-
 # =====================
 # HTML メール生成
 # =====================
@@ -82,7 +81,7 @@ def build_html_mail(data):
       </table>
 
       <p style="margin-top:24px;color:#666;font-size:12px;">
-        ※ ボタンを押すと即 Notion に反映されます
+        ※ ボタンを押すと確認画面が開きます
       </p>
     </body>
     </html>
