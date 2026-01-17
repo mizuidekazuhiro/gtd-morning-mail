@@ -182,10 +182,11 @@ def send_mail(subject, html):
 # =====================
 def main():
     data = fetch_inbox()
-    html, count = build_html_mail(data)
-    subject = f"Today’s view｜{count} 件"
-    send_mail(subject, html)
-
-
-if __name__ == "__main__":
-    main()
+    print("TOP KEYS:", list(data.keys()))
+    items = data.get("items", [])
+    print("ITEMS COUNT:", len(items))
+    if items:
+        print("FIRST ITEM KEYS:", list(items[0].keys()))
+        print("FIRST ITEM SAMPLE:", items[0])
+    # ここで return してメール送らない
+    return
