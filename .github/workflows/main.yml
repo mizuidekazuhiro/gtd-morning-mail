@@ -3,7 +3,7 @@ name: Send Inbox Triage Mail
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 22 * * *" # JST 7:00
+    - ##cron: "0 22 * * *" # JST 7:00
 
 jobs:
   send-mail:
